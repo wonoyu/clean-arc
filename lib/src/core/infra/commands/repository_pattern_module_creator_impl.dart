@@ -146,9 +146,9 @@ class RepositoryPatternModuleCreatorImpl
   Future<void> _generateInjectable() async {
     try {
       final result = await Process.run('flutter', ['pub', 'get']);
-      stderr.write(result.stderr.toString());
 
       if (result.exitCode != 0) {
+        stderr.write(result.stderr.toString());
         throw ProcessException(
           'flutter',
           ['pub', 'get'],
@@ -162,16 +162,16 @@ class RepositoryPatternModuleCreatorImpl
         'dart',
         ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
       );
-      stdout.write(res.stderr.toString());
 
       if (res.exitCode != 0) {
+        stderr.write(res.stderr.toString());
         throw ProcessException(
           'dart',
           ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
           res.stderr.toString(),
         );
       } else {
-        stdout.write(result.stdout.toString());
+        stdout.write(res.stdout.toString());
       }
     } catch (e) {
       stdout.write(e.toString());
@@ -212,7 +212,7 @@ class RepositoryPatternModuleCreatorImpl
 
     List<String> linesToWrite = [
       'targets:',
-      " '\$'default:'",
+      " '\$default:'",
       '   builders:',
       '     auto_exporter:',
       '       options:',
