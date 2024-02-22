@@ -145,27 +145,31 @@ class RepositoryPatternModuleCreatorImpl
   }
 
   Future<void> _generateInjectable() async {
-    final result = await Process.run('flutter', ['pub', 'get']);
-    print(result.stderr.toString());
+    try {
+      final result = await Process.run('flutter', ['pub', 'get']);
+      print(result.stderr.toString());
 
-    if (result.stderr != null) {
-      throw ProcessException(
-        'flutter',
-        ['pub', 'get'],
-        result.stderr.toString(),
-      );
-    }
+      // if (result.stderr != null) {
+      //   throw ProcessException(
+      //     'flutter',
+      //     ['pub', 'get'],
+      //     result.stderr.toString(),
+      //   );
+      // }
 
-    final res = await Process.run('dart',
-        ['run', 'build_runner', 'build', '--delete-conflicting-outputs']);
-    print(res.stderr.toString());
+      final res = await Process.run('dart',
+          ['run', 'build_runner', 'build', '--delete-conflicting-outputs']);
+      print(res.stderr.toString());
 
-    if (res.stderr != null) {
-      throw ProcessException(
-        'dart',
-        ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
-        res.stderr.toString(),
-      );
+      // if (res.stderr != null) {
+      //   throw ProcessException(
+      //     'dart',
+      //     ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
+      //     res.stderr.toString(),
+      //   );
+      // }
+    } catch (e) {
+      print(e.toString());
     }
   }
 
