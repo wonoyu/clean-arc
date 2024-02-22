@@ -132,6 +132,7 @@ class RepositoryPatternModuleCreatorImpl
       print('initializing injectable...');
 
       await _updateModuleFile();
+      await _addAutoExportBuildYaml();
       await _generateInjectable();
 
       return true;
@@ -144,8 +145,9 @@ class RepositoryPatternModuleCreatorImpl
 
   Future<void> _generateInjectable() async {
     final result = await Process.run('flutter', ['pub', 'get']);
-    print(result);
+
     if (result.stderr != null) {
+      print(result.stderr.toString());
       throw ProcessException(
         'flutter',
         ['pub', 'get'],
@@ -157,6 +159,7 @@ class RepositoryPatternModuleCreatorImpl
         ['run', 'build_runner', 'build', '--delete-conflicting-outputs']);
 
     if (res.stderr != null) {
+      print(res.stderr.toString());
       throw ProcessException(
         'dart',
         ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
@@ -189,6 +192,25 @@ class RepositoryPatternModuleCreatorImpl
     final testFile = File('${moduleDir.path}/test/${moduleName}_test.dart');
 
     if (await testFile.exists()) await testFile.delete();
+  }
+
+  Future<void> _addAutoExportBuildYaml({Directory? absDir}) async {
+    final moduleDir = absDir ?? Directory.current.absolute;
+
+    final moduleFile =
+        await File('${moduleDir.absolute.path}/build.yaml').create();
+
+    List<String> linesToWrite = [
+      'targets:',
+      " '\$''default:'",
+      '   builders:',
+      '     auto_exporter:',
+      '       options:',
+      '         default_export_all: true',
+      '         project_name: _exports',
+    ];
+
+    await moduleFile.writeAsString(linesToWrite.join('\n'));
   }
 
   Future<void> _addDependenciesToPubspec({Directory? absDir}) async {
