@@ -212,7 +212,7 @@ class RepositoryPatternModuleCreatorImpl
 
     List<String> linesToWrite = [
       'targets:',
-      " '\$default:'",
+      ' \$default:',
       '   builders:',
       '     auto_exporter:',
       '       options:',
