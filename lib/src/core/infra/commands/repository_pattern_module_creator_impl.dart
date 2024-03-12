@@ -128,6 +128,7 @@ class RepositoryPatternModuleCreatorImpl
       print('adding basic dev_dependencies...\n');
 
       await _addDependenciesToPubspec();
+      await _formatCodeInPubspec();
 
       print('initializing injectable...');
 
@@ -140,6 +141,29 @@ class RepositoryPatternModuleCreatorImpl
       stderr.writeln(e);
       stderr.writeln(stack);
       return false;
+    }
+  }
+
+  Future<void> _formatCodeInPubspec() async {
+    try {
+      final result = await Process.run(
+        'dart',
+        ['fix', '--apply'],
+        runInShell: true,
+      );
+
+      if (result.exitCode != 0) {
+        stderr.write(result.stderr.toString());
+        throw ProcessException(
+          'dart',
+          ['fix', '--apply'],
+          result.stderr.toString(),
+        );
+      } else {
+        stdout.write(result.stdout.toString());
+      }
+    } catch (e) {
+      stdout.write(e.toString());
     }
   }
 
@@ -234,48 +258,26 @@ class RepositoryPatternModuleCreatorImpl
           'publish_to: none';
     }
 
-    Map<String, String> packagesToAdd = {
-      'topLine': '',
-      '  core:': '\n    path: ../../core',
-      '  dependencies:': '\n    path: ../../dependencies',
-      'bottomLine': '',
-    };
+    final packagesToAdd = [
+      '',
+      '  core:',
+      '    path: ../../core',
+      '  dependencies:',
+      '    path: ../../dependencies',
+      '',
+    ];
 
     final indexStart =
-        pubspecContent.indexWhere((e) => e.contains('dependencies:'));
+        pubspecContent.indexWhere((e) => e.contains('dependencies:')) + 3;
 
-    for (var i = 0; i < packagesToAdd.length; i++) {
-      final entries = packagesToAdd.entries.toList();
+    for (int z = 0; z < packagesToAdd.length; z++) {
+      final insertionIndex = indexStart + z;
 
-      final insertionIndex = indexStart + 3 + i;
-
-      if (i == packagesToAdd.length - 1) {
-        final bottomIndex = insertionIndex + packagesToAdd.length - 2;
-        if (pubspecContent[bottomIndex].contains('\n')) {
-          continue;
-        }
-        if (pubspecContent[bottomIndex].contains('')) {
-          pubspecContent.removeAt(bottomIndex);
-        }
-        pubspecContent.insert(bottomIndex, '');
+      if (pubspecContent[insertionIndex] == packagesToAdd[z]) {
         continue;
       }
 
-      if (i == 0) {
-        if (pubspecContent[insertionIndex].contains(entries[i].value)) {
-          continue;
-        }
-        pubspecContent.insert(insertionIndex, entries[i].value);
-        continue;
-      }
-
-      if (pubspecContent.any((e) => e.contains(entries[i].key))) {
-        continue;
-      }
-
-      final package = '${entries[i].key}${entries[i].value}';
-
-      pubspecContent.insert(insertionIndex, package);
+      pubspecContent.insert(insertionIndex, packagesToAdd[z]);
     }
 
     final updated =
@@ -286,47 +288,31 @@ class RepositoryPatternModuleCreatorImpl
 
   Future<void> _addDevDependenciesToPubspec(File updated) async {
     var pubspecContent = await updated.readAsLines();
-    Map<String, String> packagesToAdd = {
-      '': '',
-      '  flutter_lints': flutterLints,
-      '  custom_lint': customLint,
-      '  riverpod_lint': riverpodLint,
-      '  auto_exporter': autoExporter,
-      '  build_runner': buildRunner,
-      '  json_serializable': jsonSerializable,
-      '  freezed': freezed,
-      '  injectable_generator': injectableGenerator,
-      '  riverpod_generator': riverpodGenerator,
-      '  envied_generator': enviedGenerator,
-    };
+    List<String> packagesToAdd = [
+      '',
+      '  flutter_lints: $flutterLints',
+      '  custom_lint: $customLint',
+      '  riverpod_lint: $riverpodLint',
+      '  auto_exporter: $autoExporter',
+      '  build_runner: $buildRunner',
+      '  json_serializable: $jsonSerializable',
+      '  freezed: $freezed',
+      '  injectable_generator: $injectableGenerator',
+      '  riverpod_generator: $riverpodGenerator',
+      '  envied_generator: $enviedGenerator',
+    ];
 
     final indexStart =
-        pubspecContent.indexWhere((e) => e.contains('flutter_test'));
+        pubspecContent.indexWhere((e) => e.contains('flutter_test')) + 2;
 
-    for (var i = 0; i < packagesToAdd.length; i++) {
-      final entries = packagesToAdd.entries.toList();
+    for (int i = 0; i < packagesToAdd.length; i++) {
+      final insertionIndex = indexStart + i;
 
-      final insertionIndex = indexStart + 2 + i;
-
-      if (i == 0) {
-        if (pubspecContent[insertionIndex].contains(entries[i].key)) {
-          continue;
-        }
-        pubspecContent.insert(insertionIndex, entries[i].key);
+      if (pubspecContent[insertionIndex] == packagesToAdd[i]) {
         continue;
       }
 
-      final package = '${entries[i].key}: ${entries[i].value}';
-
-      if (pubspecContent.any((e) => e.contains(entries[i].key))) {
-        final index =
-            pubspecContent.indexWhere((e) => e.contains(entries[i].key));
-
-        pubspecContent[index] = package;
-        continue;
-      }
-
-      pubspecContent.insert(insertionIndex, package);
+      pubspecContent.insert(insertionIndex, packagesToAdd[i]);
     }
 
     await updated.writeAsString(pubspecContent.join('\n'));
