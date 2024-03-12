@@ -308,6 +308,12 @@ class RepositoryPatternModuleCreatorImpl
     for (int i = 0; i < packagesToAdd.length; i++) {
       final insertionIndex = indexStart + i;
 
+      if (pubspecContent[insertionIndex] != packagesToAdd[i] &&
+          pubspecContent[insertionIndex].contains('flutter_lints')) {
+        pubspecContent[insertionIndex] = packagesToAdd[i];
+        continue;
+      }
+
       if (pubspecContent[insertionIndex] == packagesToAdd[i]) {
         continue;
       }
