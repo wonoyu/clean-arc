@@ -125,7 +125,7 @@ class RepositoryPatternModuleCreatorImpl
 
       await Directory(absRoute).create();
 
-      print('adding basic dev_dependencies...\n');
+      print('adding basic dependencies...\n');
 
       await _addDependenciesToPubspec();
       await _formatCodeInPubspec();
@@ -169,6 +169,7 @@ class RepositoryPatternModuleCreatorImpl
 
   Future<void> _generateInjectable() async {
     try {
+      print('\ngetting dependencies...');
       final result = await Process.run('flutter', ['pub', 'get']);
 
       if (result.exitCode != 0) {
@@ -182,6 +183,7 @@ class RepositoryPatternModuleCreatorImpl
         stdout.write(result.stdout.toString());
       }
 
+      print('\nstarting to initiate injectables...');
       final res = await Process.run(
         'dart',
         ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
@@ -258,8 +260,12 @@ class RepositoryPatternModuleCreatorImpl
       '     riverpod_generator:riverpod_generator:',
       '       generate_for:',
       '         include:',
-      '           - lib/src/presentation/controller/**_controller.dart',
+      '           - lib/src/presentation/controllers/**_controller.dart',
       '           - lib/src/route/**_route.dart',
+      '     envied_generator:envied_generator:',
+      '       generate_for:',
+      '         include:',
+      '           - lib/src/configs/**_env.dart',
     ];
 
     await moduleFile.writeAsString(linesToWrite.join('\n'));
