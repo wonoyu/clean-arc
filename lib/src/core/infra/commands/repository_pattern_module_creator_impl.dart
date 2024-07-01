@@ -170,13 +170,13 @@ class RepositoryPatternModuleCreatorImpl
   Future<void> _generateInjectable() async {
     try {
       print('\ngetting dependencies...');
-      final result = await Process.run('flutter', ['pub', 'get']);
+      final result = await Process.run('melos', ['bootstrap']);
 
       if (result.exitCode != 0) {
         stderr.write(result.stderr.toString());
         throw ProcessException(
-          'flutter',
-          ['pub', 'get'],
+          'melos',
+          ['bootstrap'],
           result.stderr.toString(),
         );
       } else {
@@ -285,9 +285,9 @@ class RepositoryPatternModuleCreatorImpl
     final packagesToAdd = [
       '',
       '  core:',
-      '    path: ../../core',
+      '    path: ../core',
       '  dependencies:',
-      '    path: ../../dependencies',
+      '    path: ../dependencies',
       '',
     ];
 
